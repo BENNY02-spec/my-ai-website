@@ -28,12 +28,28 @@ const conversationHistories = new Map();
 
 app.post("/api/chat", async (req, res) => {
   try {
-    const message = req.body.message;
+   const message = req.body?.message;
+
+if (typeof message !== "string" || !message.trim()) {
+  return res.status(400).json({
+    error: "Please enter a valid message."
+  });
+}
+
+if (message.length > 4000) {
+  return res.status(400).json({
+    error: "Message is too long. Please keep it under 4000 characters."
+  });
+}
 const conversationId = req.headers["x-conversation-id"];
 
-    if (!conversationId) {
+   if (
+  typeof conversationId !== "string" ||
+  conversationId.length > 100 ||
+  !/^[a-zA-Z0-9_-]+$/.test(conversationId)
+) {
   return res.status(400).json({
-    error: "Missing conversation ID."
+    error: "Invalid conversation ID."
   });
 }
 
@@ -67,6 +83,9 @@ const reply = fullReply;
   role: "assistant",
   content: reply
 });
+if (conversationHistory.length > 20) {
+  conversationHistory.splice(0, conversationHistory.length - 20);
+}
 
 res.json({
   reply: reply

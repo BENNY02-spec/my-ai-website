@@ -1006,12 +1006,14 @@ function closeProjectSettings() {
     }
 }
 function askProjectAI() {
-    const conversationId =
-        localStorage.getItem("myAIConversationId") ||
-        crypto.randomUUID();
+    const projectConversationKey =
+    "myAIProjectConversationId_" + currentProjectIndex;
 
-    localStorage.setItem("myAIConversationId", conversationId);
+const conversationId =
+    localStorage.getItem(projectConversationKey) ||
+    crypto.randomUUID();
 
+localStorage.setItem(projectConversationKey, conversationId);
     let input = document.getElementById("projectAIInput");
     let text = input.value.trim();
 
@@ -1048,7 +1050,12 @@ function askProjectAI() {
     "User says: " + text
         })
     })
-    .then(response => response.json())
+    .then(response => {
+    if (!response.ok) {
+        throw new Error("API request failed");
+    }
+    return response.json();
+})
     .then(data => {
         let aiText = "🤖 " + data.reply;
         thinkingMessage.textContent = aiText;
@@ -1130,6 +1137,9 @@ function clearChat() {
     chatHistory = [];
     localStorage.removeItem("myAIChat");
 
+    // Start a fresh AI conversation
+    localStorage.setItem("myAIConversationId", crypto.randomUUID());
+
     const messages = document.getElementById("messages");
     if (messages) {
         messages.innerHTML = "";
@@ -1142,12 +1152,12 @@ function goToAI() {
 }
 
 
-function sendMessage(){
+function sendMessage() {
     let input = document.getElementById("userInput");
     let messages = document.getElementById("messages");
     let text = input.value.trim();
 
-    if(!text) return;
+    if (!text) return;
 
     // Show user message
     let user = document.createElement("div");
@@ -1164,53 +1174,59 @@ function sendMessage(){
 
     input.value = "";
 
+    // Show Thinking indicator
+    let thinkingMessage = document.createElement("div");
+    thinkingMessage.className = "message ai";
+    thinkingMessage.textContent = "🤖 Thinking...";
+    messages.appendChild(thinkingMessage);
+
+    // Get the conversation ID
+    const conversationId =
+        localStorage.getItem("myAIConversationId") ||
+        crypto.randomUUID();
+
+    localStorage.setItem("myAIConversationId", conversationId);
+
     fetch("/api/chat", {
-    method: "POST",
-    headers: {
-    "Content-Type": "application/json",
-  "x-conversation-id": localStorage.getItem("myAIConversationId") ||
-    (() => {
-        const id = crypto.randomUUID();
-        localStorage.setItem("myAIConversationId", id);
-        return id;
-    })()
-},
-    body: JSON.stringify({
-        message: text
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "x-conversation-id": conversationId
+        },
+        body: JSON.stringify({
+            message: text
+        })
     })
-})
-.then(response => {
-    if (!response.ok) {
-        throw new Error("API request failed");
-    }
-    return response.json();
-})
-.then(data => {
-    let ai = document.createElement("div");
-    ai.className = "message ai";
-    ai.textContent = data.reply;
-    messages.appendChild(ai);
+    .then(response => {
+        if (!response.ok) {
+            throw new Error("API request failed");
+        }
+        return response.json();
+    })
+    .then(data => {
+        // Replace Thinking with the AI reply
+        thinkingMessage.textContent = data.reply;
 
-    chatHistory.push({
-        role: "ai",
-        text: data.reply
+        chatHistory.push({
+            role: "ai",
+            text: data.reply
+        });
+        saveChat();
+    })
+    .catch(error => {
+        console.error(error);
+
+        const errorText =
+            "AI is temporarily unavailable. Please try again later. 🤖";
+
+        thinkingMessage.textContent = errorText;
+
+        chatHistory.push({
+            role: "ai",
+            text: errorText
+        });
+        saveChat();
     });
-    saveChat();
-})
-.catch(error => {
-    console.error(error);
-
-    let ai = document.createElement("div");
-    ai.className = "message ai";
-    ai.textContent = "AI is temporarily unavailable. Please try again later. 🤖";
-    messages.appendChild(ai);
-
-    chatHistory.push({
-        role: "ai",
-        text: "AI is temporarily unavailable. Please try again later. 🤖"
-    });
-    saveChat();
-});
 }
 
 document.getElementById("userInput").addEventListener("keydown",e=>{
