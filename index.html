@@ -349,6 +349,17 @@ button:hover{
     ✨ New Chat
 </button>
 <div id="messages"></div>
+<div id="suggestedPrompts" style="text-align:center;padding:25px 15px;">
+    <h3 style="color:white;">What can I help you with?</h3>
+
+    <button onclick="usePrompt('Explain artificial intelligence in simple words.')">Explain something</button>
+
+    <button onclick="usePrompt('Help me write a professional message.')">Help me write</button>
+
+    <button onclick="usePrompt('Give me some creative business ideas.')">Brainstorm ideas</button>
+
+    <button onclick="usePrompt('Summarize a topic for me.')">Summarize a topic</button>
+</div>
 <div class="input">
     <input id="userInput" placeholder="Message My AI...">
     <button onclick="sendMessage()" style="background:#7c3aed;transition:0.2s;padding:15px 24px;font-size:16px;" onmouseover="this.style.transform='translateY(-1px)';this.style.background='#8b5cf6'" onmouseout="this.style.transform='translateY(0)';this.style.background='#7c3aed'">Send</button>
@@ -356,6 +367,11 @@ button:hover{
 </div>
 <script>
 let chatHistory = JSON.parse(localStorage.getItem("myAIChat")) || [];
+function usePrompt(prompt) {
+    const input = document.getElementById("userInput");
+    input.value = prompt;
+    input.focus();
+}
 let currentProjectIndex = null;
 
 function saveChat() {
@@ -412,33 +428,164 @@ function goToDashboard() {
         <div style="text-align:center; margin:30px 0;">
          <button onclick="createProject()" style="padding:18px 28px;font-size:17px;background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;border:1px solid rgba(167,139,250,.45);border-radius:14px;box-shadow:0 10px 30px rgba(37,99,235,.35),0 0 25px rgba(124,58,237,.2);cursor:pointer;">＋ Create New Project</button>
         </div>
+<div style="
+    padding:28px;
+    margin-top:25px;
+    border-radius:20px;
+    background:linear-gradient(135deg,#111827,#312e81);
+    border:1px solid rgba(139,92,246,.5);
+    box-shadow:0 8px 30px rgba(79,70,229,.18);
+">
+    <div style="font-size:13px;color:#a5b4fc;font-weight:bold;letter-spacing:1.5px;">
+        MY AI WORKSPACE
+    </div>
+
+    <h1 style="
+        font-size:30px;
+        color:white;
+        margin:12px 0;
+    ">
+        Welcome back! 👋
+    </h1>
+
+    <p style="color:#cbd5e1;margin:0;font-size:15px;">
+        Your ideas start here. Keep building something amazing.
+    </p>
+</div>
+
 <h2 style="
     font-size:28px;
     margin:35px 0 18px;
     color:#f8fafc;
     text-shadow:0 0 18px rgba(167,139,250,.45);
 ">
+<div style="
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+    gap:12px;
+    margin:25px 0;
+">
+    <div style="background:#172554;padding:18px;border-radius:15px;border:1px solid #3b82f6;">
+        <div id="totalProjectCount" style="font-size:28px;font-weight:bold;color:#60a5fa;">0</div>
+        <div style="font-size:12px;color:#cbd5e1;">Total Projects</div>
+    </div>
+
+    <div style="background:#2e1065;padding:18px;border-radius:15px;border:1px solid #8b5cf6;">
+        <div id="activeProjectCount" style="font-size:28px;font-weight:bold;color:#c084fc;">0</div>
+        <div style="font-size:12px;color:#e9d5ff;">In Progress</div>
+    </div>
+
+    <div style="background:#064e3b;padding:18px;border-radius:15px;border:1px solid #10b981;">
+        <div id="completedProjectCount" style="font-size:28px;font-weight:bold;color:#4ade80;">0</div>
+        <div style="font-size:12px;color:#d1fae5;">Completed</div>
+    </div>
+</div>
     📁 My Projects
 </h2>
 
-        <div id="projects"></div>
-    `;
+<div id="projects"></div>
+`;
 
-    displayProjects();
+displayProjects();
 }
 function createProject() {
-    let projectName = prompt("What do you want to call your project?");
+    const overlay = document.createElement("div");
 
-    if (!projectName) return;
+    overlay.style.cssText = `
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.75);
+        backdrop-filter: blur(7px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 99999;
+    `;
 
-    let projects = JSON.parse(localStorage.getItem("myAIProjects")) || [];
+    const modal = document.createElement("div");
 
-   projects.push(projectName);
+    modal.style.cssText = `
+        width: 90%;
+        max-width: 430px;
+        box-sizing: border-box;
+        padding: 30px;
+        border-radius: 22px;
+        background: linear-gradient(145deg,#111827,#1e1b4b);
+        border: 2px solid #7c3aed;
+        box-shadow: 0 0 35px rgba(124,58,237,.45);
+        color: white;
+        text-align: center;
+        font-family: Arial,sans-serif;
+    `;
 
-    localStorage.setItem("myAIProjects", JSON.stringify(projects));
+    modal.innerHTML = `
+        <div style="font-size:38px;">📁</div>
+        <h2 style="color:white;">Create New Project</h2>
+        <p style="color:#c4b5fd;">What are you building today?</p>
 
-    displayProjects();
+        <input id="newProjectName"
+            placeholder="Enter project name..."
+            style="box-sizing:border-box;width:100%;padding:14px;
+            border-radius:10px;border:1px solid #8b5cf6;
+            background:#0f172a;color:white;font-size:15px;">
+
+        <div style="display:flex;gap:12px;margin-top:22px;">
+            <button id="cancelProject"
+                style="flex:1;padding:13px;border:0;border-radius:10px;
+                background:#334155;color:white;cursor:pointer;">
+                Cancel
+            </button>
+
+            <button id="confirmProject"
+                style="flex:1;padding:13px;border:0;border-radius:10px;
+                background:linear-gradient(135deg,#2563eb,#7c3aed);
+                color:white;font-weight:bold;cursor:pointer;">
+                Create Project
+            </button>
+        </div>
+    `;
+
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+    const input = modal.querySelector("#newProjectName");
+    input.focus();
+
+    function closePopup() {
+        overlay.remove();
+    }
+
+    function confirmProject() {
+        const projectName = input.value.trim();
+
+        if (!projectName) {
+            input.focus();
+            return;
+        }
+
+        let projects =
+            JSON.parse(localStorage.getItem("myAIProjects")) || [];
+
+        projects.push(projectName);
+
+        localStorage.setItem(
+            "myAIProjects",
+            JSON.stringify(projects)
+        );
+
+        closePopup();
+        displayProjects();
+    }
+
+    modal.querySelector("#cancelProject").onclick = closePopup;
+    modal.querySelector("#confirmProject").onclick = confirmProject;
+
+    input.addEventListener("keydown", function(event) {
+        if (event.key === "Enter") confirmProject();
+        if (event.key === "Escape") closePopup();
+    });
 }
+
 
 function displayProjects() {
     let projects = JSON.parse(localStorage.getItem("myAIProjects")) || [];
@@ -446,13 +593,40 @@ function displayProjects() {
 
     if (!projectContainer) return;
 
-    projectContainer.innerHTML = "";
-
     let savedTasks = JSON.parse(localStorage.getItem("myAITasks")) || {};
-    let savedTypes =
-    JSON.parse(localStorage.getItem("myAIProjectTypes")) || {};
+    let savedTypes = JSON.parse(localStorage.getItem("myAIProjectTypes")) || {};
+
+    // Calculate dashboard statistics
+    let totalProjects = projects.length;
+    let completedProjects = 0;
 
     projects.forEach((projectName, index) => {
+        let tasks = savedTasks[index] || [];
+        let completedTasks = tasks.filter(task => task === true).length;
+
+        if (completedTasks === 5) {
+            completedProjects++;
+        }
+    });
+
+    let activeProjects = totalProjects - completedProjects;
+
+    // Update dashboard counters
+    let totalCounter = document.getElementById("totalProjectCount");
+    let activeCounter = document.getElementById("activeProjectCount");
+    let completedCounter = document.getElementById("completedProjectCount");
+
+    if (totalCounter) totalCounter.textContent = totalProjects;
+    if (activeCounter) activeCounter.textContent = activeProjects;
+    if (completedCounter) completedCounter.textContent = completedProjects;
+
+    projectContainer.innerHTML = "";
+
+    // Display project cards
+    projects.map((projectName, index) => ({ projectName, index }))
+    .reverse()
+    .forEach(({ projectName, index }) => {
+
         let tasks = savedTasks[index] || [];
         let projectType = savedTypes[index] || "Website";
         let completed = tasks.filter(task => task === true).length;
@@ -460,126 +634,137 @@ function displayProjects() {
 
         let project = document.createElement("div");
 
-        project.style.display = "block";
-        project.style.width = "100%";
-        project.style.margin = "15px 0";
-        project.style.padding = "26px";
-        project.style.textAlign = "left";
-        project.style.background = "linear-gradient(145deg,rgba(17,24,39,.96),rgba(30,20,60,.92))";
-        project.style.color = "#f8fafc";
-    project.style.border = "2px solid rgba(139,92,246,.65)";
-        project.style.borderRadius = "20px";
-        project.style.background = "linear-gradient(145deg,rgba(17,24,39,.96),rgba(30,20,60,.92))";
-        project.style.transition = "transform 0.15s ease, box-shadow 0.15s ease";
-        project.style.cursor = "pointer";
-       project.onmouseenter = function() {
-    project.style.transform = "translateY(-4px)";
-    project.style.boxShadow = "0 16px 40px rgba(124,58,237,.35)";
-};
-project.innerHTML = `
-   <div style="
-    font-size:27px;
-    font-weight:800;
-    color:#ffffff;
-    text-shadow:0 0 18px rgba(139,92,246,.9);
-    letter-spacing:.3px;
-">
-    📁 ${projectName}
-</div>
-    <div style="margin-top:8px;color:#777;">
-        Website
-    </div>
-    <div style="margin-top:15px;background:#eee;border-radius:10px;height:10px;">
-        <div style="width:0%;height:100%;background:#7c3aed;border-radius:10px;"></div>
-    </div>
-    <div style="margin-top:8px;color:#777;font-size:14px;">
-        0% complete
-    </div>
-`;
-
-projectContainer.appendChild(project);
-project.onmouseleave = function() {
-    project.style.transform = "translateY(0)";
-    project.style.boxShadow = "0 4px 12px rgba(0,0,0,0.08)";
-};
-
-        project.innerHTML = `
-            <div style="font-size:20px;font-weight:bold;color:#f8fafc;">
-    📁 ${projectName}
-</div>
-
-<div style="
-    color:#c4b5fd;
-    margin-top:8px;
-    font-size:14px;
-    font-weight:bold;
-    letter-spacing:.3px;
-">
-    🚀 Project Workspace
-<div style="
-    margin-top:15px;
-    font-weight:bold;
-    font-size:18px;
-    color:#c4b5fd;
-    text-shadow:0 0 12px rgba(167,139,250,.45);
-">
-    Progress: ${progress}%
-</div>
-
-           <div style="
-    background:rgba(255,255,255,.08);
-    border:1px solid rgba(167,139,250,.18);
-    border-radius:10px;
-    height:12px;
-    margin-top:8px;
-    overflow:hidden;
-">
-               <div style="background:linear-gradient(90deg,#2563eb,#7c3aed);width:${progress}%;height:12px;border-radius:10px;"></div>
-            </div>
-
-            <div style="color:#555;margin-top:8px;">
-    🏷️ ${projectType}
-</div>
-          <div style="
-    color:#f5f3ff;
-    margin-top:10px;
-    font-size:15px;
-    font-weight:bold;
-    text-shadow:0 0 10px rgba(167,139,250,.6);
-">
-    ${completed}/5 tasks completed
-</div>
-           <div style="margin-top:15px;">
-            
-   <button
-    onclick="event.stopPropagation(); renameProject(event, ${index})"
-    style="background:linear-gradient(135deg,#2563eb,#4f46e5);color:white;padding:10px 14px;border:1px solid rgba(167,139,250,.35);border-radius:10px;cursor:pointer;font-weight:bold;">
-    ✏️ Rename
-</button>
-
-<button
-   onclick="event.preventDefault(); event.stopPropagation(); openProjectSettings(event, ${index}); return false;"
-    style="margin-left:8px;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#f5f3ff;padding:10px 14px;border:1px solid rgba(167,139,250,.4);border-radius:10px;cursor:pointer;font-weight:bold;">
-    ⚙️ Settings
-</button>
-    <button
-    onclick="deleteProject(event, ${index})"
- style="margin-left:8px;background:rgba(239,68,68,.15);color:#fca5a5;padding:9px 13px;border:1px solid rgba(239,68,68,.4);border-radius:9px;cursor:pointer;font-weight:bold;">
-    🗑️ Delete
-</button>
-</div>
+        project.style.cssText = `
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+            margin: 18px 0;
+            padding: 26px;
+            text-align: left;
+            background: linear-gradient(145deg,#111827,#1e1b4b);
+            color: #f8fafc;
+            border: 1px solid rgba(139,92,246,.55);
+            border-radius: 20px;
+            box-shadow: 0 8px 25px rgba(0,0,0,.2);
+            transition: transform .2s ease, box-shadow .2s ease, border .2s ease;
+            cursor: pointer;
         `;
 
-     project.onclick = function() {
-    project.style.transform = "scale(0.98)";
-    setTimeout(() => {
-        openProject(index);
-    }, 100);
-};
+        project.innerHTML = `
+            <div style="
+                display:flex;
+                align-items:center;
+                gap:12px;
+                font-size:21px;
+                font-weight:800;
+                color:#fff;
+                overflow-wrap:anywhere;
+            ">
+                <span style="font-size:28px;">📁</span>
+                ${projectName}
+            </div>
+
+            <div style="
+                color:#a5b4fc;
+                margin-top:12px;
+                font-size:13px;
+                font-weight:bold;
+                letter-spacing:1px;
+                text-transform:uppercase;
+            ">
+                🚀 Project Workspace
+            </div>
+
+            <div style="
+                display:flex;
+                justify-content:space-between;
+                align-items:center;
+                margin-top:22px;
+            ">
+                <span style="font-weight:bold;color:#e9d5ff;">
+                    Project Progress
+                </span>
+                <span style="font-weight:bold;color:#c4b5fd;">
+                    ${progress}%
+                </span>
+            </div>
+
+            <div style="
+                background:rgba(255,255,255,.09);
+                border-radius:20px;
+                height:12px;
+                margin-top:10px;
+                overflow:hidden;
+            ">
+                <div style="
+                    background:linear-gradient(90deg,#2563eb,#8b5cf6);
+                    width:${progress}%;
+                    height:100%;
+                    border-radius:20px;
+                    transition:width .3s ease;
+                "></div>
+            </div>
+
+            <div style="
+                display:flex;
+                justify-content:space-between;
+                flex-wrap:wrap;
+                gap:8px;
+                margin-top:16px;
+                color:#cbd5e1;
+                font-size:13px;
+            ">
+                <span>🏷️ ${projectType}</span>
+                <span>${completed}/5 tasks completed</span>
+            </div>
+
+            <div style="
+                display:flex;
+                flex-wrap:wrap;
+                gap:9px;
+                margin-top:22px;
+            ">
+                <button
+                    onclick="event.stopPropagation(); renameProject(event, ${index})"
+                    style="background:linear-gradient(135deg,#2563eb,#4f46e5);color:white;padding:10px 14px;border:0;border-radius:10px;cursor:pointer;font-weight:bold;">
+                    ✏️ Rename
+                </button>
+
+                <button
+                    onclick="event.stopPropagation(); openProjectSettings(event, ${index}); return false;"
+                    style="background:linear-gradient(135deg,#4f46e5,#7c3aed);color:white;padding:10px 14px;border:0;border-radius:10px;cursor:pointer;font-weight:bold;">
+                    ⚙️ Settings
+                </button>
+
+                <button
+                    onclick="event.stopPropagation(); deleteProject(event, ${index})"
+                    style="background:rgba(239,68,68,.15);color:#fca5a5;padding:10px 14px;border:1px solid rgba(239,68,68,.4);border-radius:10px;cursor:pointer;font-weight:bold;">
+                    🗑️ Delete
+                </button>
+            </div>
+        `;
+
+        project.onmouseenter = function() {
+            project.style.transform = "translateY(-4px)";
+            project.style.boxShadow = "0 16px 35px rgba(124,58,237,.25)";
+            project.style.borderColor = "#8b5cf6";
+        };
+
+        project.onmouseleave = function() {
+            project.style.transform = "translateY(0)";
+            project.style.boxShadow = "0 8px 25px rgba(0,0,0,.2)";
+            project.style.borderColor = "rgba(139,92,246,.55)";
+        };
+
+        project.onclick = function() {
+            openProject(index);
+        };
 
         projectContainer.appendChild(project);
     });
 }
+
+            
 function openProject(index) {
     currentProjectIndex = index;
     let projects = JSON.parse(localStorage.getItem("myAIProjects")) || [];
@@ -778,25 +963,72 @@ function deleteProject(event, index) {
     let projects = JSON.parse(localStorage.getItem("myAIProjects")) || [];
 
     showDeleteConfirmation(() => {
-    projects.splice(index, 1);
+        projects.splice(index, 1);
+        localStorage.setItem("myAIProjects", JSON.stringify(projects));
 
-    localStorage.setItem("myAIProjects", JSON.stringify(projects));
+        // Shift all project data so it stays with the correct project
+        const storageKeys = [
+            "myAITasks",
+            "myAIProjectTypes",
+            "myAIProjectDescriptions",
+            "myAINotes",
+            "myAIProjectChats"
+        ];
 
-    let savedTasks = JSON.parse(localStorage.getItem("myAITasks")) || {};
-    savedTasks = Object.fromEntries(
-        Object.entries(savedTasks)
-            .filter(([key]) => Number(key) !== index)
-            .map(([key, value]) => [
-                Number(key) > index ? Number(key) - 1 : Number(key),
-                value
-            ])
-    );
+        storageKeys.forEach(storageKey => {
+            let data = JSON.parse(localStorage.getItem(storageKey)) || {};
+            let updatedData = {};
 
-    localStorage.setItem("myAITasks", JSON.stringify(savedTasks));
+            Object.entries(data).forEach(([key, value]) => {
+                let oldIndex = Number(key);
 
-    displayProjects();
-});
-return;
+                if (!Number.isInteger(oldIndex) || oldIndex < 0) {
+                    updatedData[key] = value;
+                } else if (oldIndex < index) {
+                    updatedData[oldIndex] = value;
+                } else if (oldIndex > index) {
+                    updatedData[oldIndex - 1] = value;
+                }
+            });
+
+            localStorage.setItem(storageKey, JSON.stringify(updatedData));
+            });
+
+        // Shift project-specific AI conversation IDs
+        const prefix = "myAIProjectConversationId_";
+        let conversationIds = [];
+
+        for (let i = 0; i < localStorage.length; i++) {
+            let key = localStorage.key(i);
+
+            if (key && key.startsWith(prefix)) {
+                let oldIndex = Number(key.slice(prefix.length));
+
+                if (Number.isInteger(oldIndex)) {
+                    conversationIds.push({
+                        index: oldIndex,
+                        value: localStorage.getItem(key)
+                    });
+                }
+            }
+        }
+
+        conversationIds.forEach(item => {
+            localStorage.removeItem(prefix + item.index);
+        });
+
+        conversationIds.forEach(item => {
+            if (item.index < index) {
+                localStorage.setItem(prefix + item.index, item.value);
+            } else if (item.index > index) {
+                localStorage.setItem(prefix + (item.index - 1), item.value);
+            }
+        });
+
+        displayProjects();
+    });
+
+    return;
 }
 function renameProject(event, index) {
     event.stopPropagation();
@@ -1134,13 +1366,28 @@ function loadProjectAIChat() {
 }
 
 function clearChat() {
+    const oldConversationId =
+        localStorage.getItem("myAIConversationId");
+
+    if (oldConversationId) {
+        fetch("/api/clear", {
+            method: "POST",
+            headers: {
+                "x-conversation-id": oldConversationId
+            }
+        }).catch(error => console.error(error));
+    }
+
     chatHistory = [];
     localStorage.removeItem("myAIChat");
 
-    // Start a fresh AI conversation
-    localStorage.setItem("myAIConversationId", crypto.randomUUID());
+    localStorage.setItem(
+        "myAIConversationId",
+        crypto.randomUUID()
+    );
 
     const messages = document.getElementById("messages");
+
     if (messages) {
         messages.innerHTML = "";
     }
